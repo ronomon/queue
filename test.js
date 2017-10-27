@@ -47,7 +47,7 @@ function test(testCount, end) {
   var total = Math.round(random() * 1000);
   var pushed = 0;
   var running = 0;
-  var pending = 0;
+  var length = 0;
   var closed = false;
   var closing = false;
   var errorValue;
@@ -73,8 +73,8 @@ function test(testCount, end) {
         );
       }
     }
-    if (queue.pending !== pending) {
-      throw new Error('queue.pending=' + queue.pending + ' !== ' + pending);
+    if (queue.length !== length) {
+      throw new Error('queue.length=' + queue.length + ' !== ' + length);
     }
     if (queue.running !== running) {
       throw new Error('queue.running=' + queue.running + ' !== ' + running);
@@ -104,7 +104,7 @@ function test(testCount, end) {
       delete started[job];
       stopped[job] = true;
       running--;
-      pending--;
+      length--;
       if (random() < 0.01) {
         closing = true;
         console.log(
@@ -142,7 +142,7 @@ function test(testCount, end) {
       label +
       pad(job, 4) + ' / ' + pad(total, 4) +
       ' concurrency=' + pad(queue.concurrency, 4) +
-      ' pending=' + pad(pending, 4) +
+      ' length=' + pad(length, 4) +
       ' running=' + pad(running, 4)
     );
     if (random() < 0.5) return finish();
@@ -190,20 +190,20 @@ function test(testCount, end) {
     if (running !== 0) {
       throw new Error('onEnd running=' + running + ' !== 0');
     }
-    var completed = pushed - pending;
+    var completed = pushed - length;
     if (Object.keys(stopped).length !== completed) {
       console.log('queue.running=' + queue.running);
-      console.log('queue.pending=' + queue.pending);
+      console.log('queue.length=' + queue.length);
       console.log('stopped=' + Object.keys(stopped).join(','));
       throw new Error(
         'onEnd stopped=' + Object.keys(stopped).length +
-        ' !== (pushed=' + pushed + ' - pending=' + pending + ')=' +
-        (pushed - pending)
+        ' !== (pushed=' + pushed + ' - length=' + length + ')=' +
+        (pushed - length)
       );
     }
     if (!closing) {
-      if (pending !== 0) {
-        throw new Error('onEnd pending=' + pending + ' !== 0');
+      if (length !== 0) {
+        throw new Error('onEnd length=' + length + ' !== 0');
       }
     }
     assert();
@@ -211,7 +211,7 @@ function test(testCount, end) {
       label +
       pad(completed, 4) + ' / ' + pad(total, 4) +
       ' concurrency=' + pad(queue.concurrency, 4) +
-      ' pending=' + pad(pending, 4) +
+      ' length=' + pad(length, 4) +
       ' running=' + pad(running, 4) +
       (error ? ' error=' + error : ' success')
     );
@@ -232,11 +232,11 @@ function test(testCount, end) {
     if (jobs.length) {
       if (!closing) {
         pushed++;
-        pending++;
+        length++;
       }
       queue.push(jobs.shift());
-      if (!closing && queue.running === 0 && queue.pending === pushed && pushed > 0) {
-        console.log('pending=' + pending);
+      if (!closing && queue.running === 0 && queue.length === pushed && pushed > 0) {
+        console.log('length=' + length);
         console.log('pushed=' + pushed);
         console.log(queue);
         throw new Error('queue.push() should trigger processing');

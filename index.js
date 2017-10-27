@@ -10,7 +10,7 @@ var Queue = function(concurrency) {
     throw new Error('too many arguments');
   }
   self.concurrency = Queue.parseConcurrency(concurrency);
-  self.pending = 0;
+  self.length = 0;
   self.running = 0;
   self.error = undefined;
   self.stopped = false;
@@ -54,7 +54,7 @@ Queue.prototype.push = function(job) {
   }
   if (self._flags & CLOSED_CLOSING) return;
   self._array.push(job);
-  self.pending++;
+  self.length++;
   if (!(self._flags & PROCESSING)) self._process();
 };
 
@@ -73,7 +73,7 @@ Queue.prototype._callback = function(error) {
   if (self._flags & CLOSED) {
     throw new Error('an onData handler called end() more than once');
   }
-  self.pending--;
+  self.length--;
   self.running--;
   self._tick(error);
 };
@@ -118,7 +118,7 @@ Queue.prototype._tick = function(error) {
       return;
     }
   }
-  if ((self._flags & EOF) && self.pending === 0) {
+  if ((self._flags & EOF) && self.length === 0) {
     if (self.running !== 0) {
       throw new Error('running=' + self.running + ' !== 0');
     }

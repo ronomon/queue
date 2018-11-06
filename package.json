@@ -1,6 +1,6 @@
 {
   "name": "@ronomon/queue",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Process thousands of asynchronous or synchronous jobs, concurrently or sequentially, safely and efficiently, without creating thousands of closures.",
   "main": "index.js",
   "files": [
